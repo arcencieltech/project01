@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+
+        <record id="view_tax_form_inherit" model="ir.ui.view">
+            <field name="name">account.tax.form</field>
+            <field name="model">account.tax</field>
+            <field name="inherit_id" ref="account.view_tax_form" />
+            <field name="arch" type="xml">
+            
+            	<xpath expr="//form/sheet" position="inside">
+	            	<header>
+	                    <button type="object" name="get_vefd_taxes"  string="Update VEFD Taxes" class="oe_highlight"/>
+	                </header>
+	            </xpath>
+            	
+				<xpath expr="//field[@name='active']" position="before">
+					<field name="is_vefd_tax" widget="boolean_toggle"/>
+				</xpath>
+				
+				<xpath expr="//notebook/page[@name='advanced_options']" position="after">
+					<page string="VEFD Tax Configuration" name="vefd_config" attrs="{'invisible':[('is_vefd_tax','!=', True)]}">
+                         <group>
+                             <group>
+                                 <field name="vefd_tax_type_id" />
+                                 <field name="vefd_tax_name" />
+                                 <field name="vefd_tax_code" />
+                                 <field name="vefd_tax_rate" />
+                             </group>
+                             <!-- <group>
+                                 <field name="vefd_tax_type" />
+                             </group> -->
+                         </group>
+                     </page>
+                  </xpath>
+				
+			</field>
+        </record>
+
+
+    </data>
+</odoo>

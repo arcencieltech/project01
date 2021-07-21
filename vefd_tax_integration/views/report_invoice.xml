@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_invoice_document_vefd" inherit_id="account.report_invoice_document">
+        <xpath expr="//div[@id='qrcode']" position="after">
+            <div class="row" t-if="o.vefd_fiscalcode">
+                <div class="col-xs-12 mt32">
+                	
+                    <p class="text-center">VEFD</p>
+                    <p class="">Fiscal Code : <t t-esc="o.vefd_fiscalcode"/></p>
+                    <p class="">Invoice Code : <t t-esc="o.vefd_invoicecode"/></p>
+                    <p class="">Invoice Number : <t t-esc="o.vefd_invoicenumber"/></p>
+                    <t t-if="o.reversed_entry_id">
+                    	<p class="">Original Invoice Code : <t t-esc="o.reversed_entry_id.vefd_invoicecode"/></p>
+                    	<p class="">Original Invoice Number : <t t-esc="o.reversed_entry_id.vefd_invoicenumber"/></p>
+                    </t>
+                    <img t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('QR', 'Verification Url:'+str(o.vefd_verificationUrl)+'\n'+'TPIN:'+str(o.vefd_TPIN)+'\n'+'Invoice Code:'+str(o.vefd_invoicecode)+'\n'+'Invoice No:'+str(o.vefd_invoicenumber)+'\n'+'Terminal ID:'+str(o.vefd_terminalID)+'\n'+'Fiscal Code:'+str(o.vefd_fiscalcode)+'\n'+'Date:'+str(o.vefd_date), 150, 150)"/>
+                </div>
+            </div>
+        </xpath>
+        
+        <xpath expr="//div[@id='total']" position="replace">
+	        <div id="total" class="row">
+	                            <div t-attf-class="#{'col-6' if report_type != 'html' else 'col-sm-7 col-md-6'} ml-auto">
+	                                <table class="table table-sm" style="page-break-inside: avoid;">
+	                                    <tr class="border-black o_subtotal" style="">
+	                                        <td><strong>Subtotal</strong></td>
+	                                        <td class="text-right">
+	                                            <span t-field="o.amount_untaxed"/>
+	                                        </td>
+	                                    </tr>
+	                                    
+	                                    <!-- [('MTVs', 0.1, 5.0, '$ 0.10', '$ 5.00', 1, 1)] -->
+	                                    
+	                                    
+	                                    <t t-foreach="o.amount_by_group" t-as="amount_by_group">
+	                                        <tr style="">
+	                                            <t t-if="len(o.line_ids.filtered(lambda line: line.tax_line_id)) in [0, 1] and o.amount_untaxed == amount_by_group[2]">
+	                                                <td><span class="text-nowrap" t-esc="amount_by_group[0]"/></td>
+	                                                <td class="text-right o_price_total">
+	                                                    <span class="text-nowrap" t-esc="amount_by_group[3]" t-if="not o.vefd_fiscalcode or amount_by_group[0] != 'MTVs'"/>
+	                                                    <span class="text-nowrap" t-esc="o.vefd_mtv_tax_price" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}" t-if="o.vefd_fiscalcode and amount_by_group[0] == 'MTVs'"/>
+	                                                </td>
+	                                            </t>
+	                                            <t t-else="">
+	                                                <td>
+	                                                    <span t-esc="amount_by_group[0]"/>
+	                                                    <span class="text-nowrap" t-if="not o.vefd_fiscalcode or amount_by_group[0] != 'MTVs'"> on
+	                                                        <t t-esc="amount_by_group[4]"/>
+	                                                    </span>
+	                                                </td>
+	                                                <td class="text-right o_price_total">
+	                                                    <span class="text-nowrap" t-esc="amount_by_group[3]" t-if="not o.vefd_fiscalcode or amount_by_group[0] != 'MTVs'"/>
+	                                                    <span class="text-nowrap" t-esc="o.vefd_mtv_tax_price" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}" t-if="o.vefd_fiscalcode and amount_by_group[0] == 'MTVs'"/>
+	                                                </td>
+	                                            </t>
+	                                        </tr>
+	                                    </t>
+	                                    
+	                                    
+	                                    
+	                                    
+	                                    <tr class="border-black o_total">
+	                                        <td><strong>Total</strong></td>
+	                                        <td class="text-right">
+	                                            <span class="text-nowrap" t-field="o.amount_total"/>
+	                                        </td>
+	                                    </tr>
+	                                    <t t-if="print_with_payments">
+	                                        <t t-if="o.payment_state != 'invoicing_legacy'">
+	                                            <t t-set="payments_vals" t-value="o.sudo()._get_reconciled_info_JSON_values()"/>
+	                                            <t t-foreach="payments_vals" t-as="payment_vals">
+	                                                <tr>
+	                                                    <td>
+	                                                        <i class="oe_form_field text-right oe_payment_label">Paid on <t t-esc="payment_vals['date']" t-options="{&quot;widget&quot;: &quot;date&quot;}"/></i>
+	                                                    </td>
+	                                                    <td class="text-right">
+	                                                        <span t-esc="payment_vals['amount']" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+	                                                    </td>
+	                                                </tr>
+	                                            </t>
+	                                            <t t-if="len(payments_vals) &gt; 0">
+	                                                <tr class="border-black">
+	                                                    <td><strong>Amount Due</strong></td>
+	                                                    <td class="text-right">
+	                                                        <span t-field="o.amount_residual"/>
+	                                                    </td>
+	                                                </tr>
+	                                            </t>
+	                                        </t>
+	                                    </t>
+	                                </table>
+	                            </div>
+	                        </div>
+	     </xpath>
+        
+        
+    </template>
+</odoo>

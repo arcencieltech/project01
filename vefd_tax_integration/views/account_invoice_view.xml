@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+
+		<record id="account_invoice_extend_form" model="ir.ui.view">
+			<field name="name">account.move.extend.form</field>
+			<field name="model">account.move</field>
+			<field name="inherit_id" ref="account.view_move_form" />
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='payment_reference']" position="after">
+					<field name="vefd_paymentmode" attrs="{'invisible': [('move_type', 'not in', ('out_invoice', 'out_refund'))],'readonly': [('state', '!=', 'draft')]}"/>
+					<field name="vefd_TPIN" invisible="1" />
+					<field name="vefd_terminalID" invisible="1" />
+					<field name="vefd_invoicecode" attrs="{'invisible': [('move_type', 'not in', ('out_invoice', 'out_refund'))],'readonly': [('state', '!=', 'draft')]}" />
+					<field name="vefd_invoicenumber" attrs="{'invisible': [('move_type', 'not in', ('out_invoice', 'out_refund'))],'readonly': [('state', '!=', 'draft')]}" />
+					<field name="vefd_fiscalcode" attrs="{'invisible': [('move_type', 'not in', ('out_invoice', 'out_refund'))],'readonly': [('state', '!=', 'draft')]}" />
+					<field name="vefd_c2_code" attrs="{'invisible': [('move_type', 'not in', ('out_invoice', 'out_refund'))],'readonly': [('state', '!=', 'draft')]}" />
+					<field name="vefd_mtv_tax_price" invisible="1" />
+				</xpath>
+				
+				
+				 <xpath expr="//field[@name='invoice_line_ids']//field[@name='discount']" position="after">
+                 	<field name="vefd_rrp" />
+                 	<field name="vefd_tax_mtv_price" invisible="1"/>
+                 </xpath>
+                 
+                 <xpath expr="//field[@name='line_ids']//field[@name='discount']" position="after">
+                 	<field name="vefd_rrp" invisible="1"/>
+                 	<field name="vefd_tax_mtv_price" invisible="1"/>
+                 </xpath>
+				
+				
+			</field>
+		</record>
+
+	</data>
+</odoo>

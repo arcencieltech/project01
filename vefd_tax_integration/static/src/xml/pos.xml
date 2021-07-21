@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="pos_custom_receipt" xml:space="preserve">
+    <t t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
+    
+    
+    	<xpath expr="//t[@t-if='!isTaxIncluded']" position="replace">
+
+			<div class="pos-receipt-right-align">--------</div>
+               <br/>
+               <div>Subtotal<span t-esc="env.pos.format_currency(receipt.subtotal)" class="pos-receipt-right-align"/></div>
+               <t t-foreach="receipt.tax_details" t-as="tax" t-key="tax.name">
+                   <div t-if="tax.name != 'MTVs'">
+                       <t t-esc="tax.name" />
+                       <span t-esc='env.pos.format_currency_no_symbol(tax.amount)' class="pos-receipt-right-align"/>
+                   </div>
+                   
+                   <div t-if="tax.name == 'MTVs'">
+                       <t t-esc="tax.name" />
+                       <span style="" class="pos-receipt-right-align" id="pos_vefdtax_amount"></span>
+                   </div>
+               </t>
+			    		
+    	</xpath>
+    	
+    	<xpath expr="//t[@t-if='isTaxIncluded']" position="replace">
+    	
+    	
+    		<t t-if="isTaxIncluded">
+    			<t t-set="tax_total" t-value="0"/>
+    			
+    			<!-- <t t-set="is_mtv" t-value="0"/> -->
+    			
+                <t t-foreach="receipt.tax_details" t-as="tax" t-key="tax.name">
+                	
+                    <div t-if="tax.name != 'MTVs'">
+                        <t t-esc="tax.name" />
+                        <span t-esc="env.pos.format_currency_no_symbol(tax.amount)" class="pos-receipt-right-align"/>
+                        <t t-set="tax_total" t-value="tax_total+tax.amount"/>
+                    </div>
+                     <div t-if="tax.name == 'MTVs'">
+                     	<!-- <t t-set="is_mtv" t-value="1"/> -->
+                        <t t-esc="tax.name" />
+                        <span style="" class="pos-receipt-right-align" id="pos_vefdtax_amount1"></span>
+                    </div>
+                </t>
+                <input id="tax_total" type="number" name="tax_total"
+						t-att-value="tax_total" hidden="true"/>
+                <div>
+                    Total Taxes
+                    <span t-esc="env.pos.format_currency(receipt.total_tax)" class="pos-receipt-right-align" id="pos_tax_total"/>
+                    <span t-esc="tax_total" id="mtv_tax_total" class="pos-receipt-right-align"/>
+                </div>
+            </t>
+    		
+			    		
+    	</xpath>
+    
+        <xpath expr="//div[@class='pos-receipt-order-data']" position="after">
+						
+			<input id="order_number" type="text" name="order_number"
+						t-att-value="receipt.name" hidden="true"/>
+						
+			<div id="vefd" style="font-size:11px;">
+				<p style="text-align:center;font-size:11px;">VEFD</p>
+				<p id="vefd_fiscalcode" name="vefd_fiscalcode" style="font-size:11px;"></p>
+            	<p id="vefd_invoicecode" name="vefd_invoicecode" style="font-size:11px;"></p>
+            	<p id="vefd_invoicenumber" name="vefd_invoicenumber" style="font-size:11px;"></p>
+            </div>
+            <script>
+            $(document).ready(function ($) {
+            	var order_number = document.getElementById("order_number").value;
+            	var tax_total = document.getElementById("tax_total").value;
+            	
+            	
+            	/* $.ajax({
+			        url: "/get_vefd_qrcode",
+			        type: 'POST',
+			        data: {'pos_no':order_number},
+			        success: function(result) {	
+			        
+						if (result != 'False') {
+						
+							jQuery('#qrcodeTable').qrcode({
+								width: 256,height: 256,
+								text	: result
+							});	
+						 
+							$("#qrcodeTable").show();
+							$("#vefd").show();
+						} 
+						else{
+							$("#qrcodeTable").hide();
+							$("#vefd").hide();
+						}
+			        
+			        },
+			    }); */
+			    
+			    $.ajax({
+			        url: "/get_vefd_mtvtax_price",
+			        type: 'POST',
+			        data: {'pos_no':order_number},
+			        success: function(result) {
+			        
+						if (result) {
+							$("#pos_tax_total").hide();
+						 	$("#mtv_tax_total").show();
+						 	$("#pos_vefdtax_amount").text(result);
+						 	$("#pos_vefdtax_amount1").text(result);
+						} else {
+							$("#pos_tax_total").show();
+							$("#mtv_tax_total").hide();
+						}
+			        
+			        },
+			    });
+			    
+			    $.ajax({
+			        url: "/get_vefd_totalmtvtax_price",
+			        type: 'POST',
+			        data: {'pos_no':order_number,'tax_total':tax_total},
+			        success: function(result) {
+			        
+						if (result) {
+						 	
+						 	$("#mtv_tax_total").text(result);
+						} 
+			        
+			        },
+			    });
+			    
+			    
+            	$.ajax({
+			        url: "/get_vefd_fiscalcode",
+			        type: 'POST',
+			        data: {'pos_no':order_number},
+			        success: function(result) {
+			        
+						if (result) {
+						 
+						 	$("#vefd_fiscalcode").text(result);
+						} 
+						else{
+							$("#vefd").hide();
+						}
+			        
+			        },
+			    });
+			    
+			    
+			    $.ajax({
+			        url: "/get_vefd_invoicecode",
+			        type: 'POST',
+			        data: {'pos_no':order_number},
+			        success: function(result) {
+			        	$("#vefd_invoicecode").text(result);
+			        	
+			        }
+			    });
+
+				
+				$.ajax({
+			        url: "/get_vefd_invoicenumber",
+			        type: 'POST',
+			        data: {'pos_no':order_number},
+			        success: function(result) {
+						$("#vefd_invoicenumber").text(result);	        	
+			        }
+			    });
+				
+				
+			});
+			</script>
+			
+            <br/>
+			<!-- <div id="qrcodeTable" style="text-align:center;"/> -->
+			
+        </xpath>
+    </t>
+    
+    
+    <t t-inherit="point_of_sale.PaymentScreen" t-inherit-mode="extension">
+    
+        <xpath expr="//div[@class='payment-controls']" position="inside">
+        
+				<script>
+				
+				$(document).ready(function ($) {
+					
+						$.ajax({
+					        url: "/get_vefd_details",
+					        type: 'POST',
+					        data: {},
+					        success: function(result) {
+					        		$("#vefd_order_id").empty().append(result)
+					        },
+					    });
+					    
+					    
+					    $("#vefd_order_search_id").keyup(function(){
+					    
+					    	var vefd_order_search_id = $(this).val();
+					    	
+					    	$.ajax({
+						        url: "/get_vefd_details",
+						        type: 'POST',
+						        data: {'vefd_order_search_id':vefd_order_search_id},
+						        success: function(result) {
+						        		$("#vefd_order_id").empty().append(result)
+						        },
+						    });
+					    	
+						  });
+					    
+					    
+					    
+					});
+				</script>
+				
+				
+			<!-- <div class="" style="padding-top:10px;text-align:center;">
+			
+				<t t-set="i" t-value="1" />
+				
+				<t t-set="product_vefd_id" t-value="'product_id_'+str(i)"/>
+				
+				<input type="number" t-att-name="product_vefd_id" t-att-value="" />
+				
+				<t t-set="i" t-value="i+1" />
+				
+             </div> -->
+             
+						
+			<!-- <div class="" style="padding-top:10px;text-align:center;">
+				 <input id="vefd_order_search_id" type="text" name="vefd_order_search_id" class="box" 
+				 placeholder="-Search order for refund-" style="height:34px;border-radius:12px;width:80%;"/>
+             </div>
+			
+			<div class="" style="padding-top:10px;">
+				  <span style="font-size:initial">Order To Refund </span>
+	              <select id="vefd_order_id" name="vefd_order_id" class="box" style="height:48px;border-radius:12px;">
+	                <option value="">-Select order to refund-</option>
+	              </select>
+             </div> -->
+						
+        </xpath>
+    </t>
+    
+    
+    
+   <!--  <t t-inherit="point_of_sale.NumpadWidget" t-inherit-mode="extension">
+    
+        <xpath expr="//div[@class='numpad']" position="inside">
+        
+        	<button class="mode-button" t-att-class="{'selected-mode': props.activeMode === 'rrp'}" style="width:100%;"
+            t-on-click="changeMode('rrp')">Retail Price</button>
+				
+        </xpath>
+    </t> -->
+    
+     <t t-inherit="point_of_sale.OrderManagementScreen" t-inherit-mode="extension">
+     
+     
+     	<!-- <script>
+				
+				$(document).ready(function ($) {
+						
+						//alert('reund');
+					
+						$.ajax({
+					        url: "/get_vefd_details",
+					        type: 'POST',
+					        data: {},
+					        success: function(result) {
+					        		$("#vefd_order_id").empty().append(result)
+					        },
+					    });
+					    
+					    
+					});
+		</script> -->
+    
+        <xpath expr="//div[@class='control-buttons']" position="inside">
+        
+        	<button class="refund-click-pay highlight" t-on-click="trigger('refund-click-pay')" style="width:42%;height:32px;display: none;" groups="group_pos_manager">Refund Order</button>
+				
+        </xpath>
+    </t>
+    
+    <!-- <t t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
+    
+        <xpath expr="//ul[@class='info-list']/t[2]" position="after">
+        <t t-if="props.line.get_rrp_str() !== '0'">
+        	<li class="info">
+                        Retail Price :
+                        <em>
+                            <t t-esc="props.line.get_rrp_str()" />
+                        </em>
+            </li>
+		</t>
+        </xpath>
+    </t> -->
+    
+    
+</templates>
