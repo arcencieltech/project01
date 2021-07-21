@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+
+		<record id="view_pos_pos_form_extend_form" model="ir.ui.view">
+			<field name="name">pos.order.extend.form</field>
+			<field name="model">pos.order</field>
+			<field name="inherit_id" ref="point_of_sale.view_pos_pos_form" />
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='fiscal_position_id']" position="after">
+					<!-- <field name="vefd_paymentmode" attrs="{'readonly': [('state', '!=', 'draft')]}"/> -->
+					<field name="vefd_TPIN" invisible="1" />
+					<field name="vefd_refund_id" invisible="1" />
+					<field name="vefd_terminalID" invisible="1" />
+					<field name="vefd_fiscalcode" attrs="{'readonly': [('state', '!=', 'draft')]}" />
+					<field name="vefd_invoicecode" attrs="{'readonly': [('state', '!=', 'draft')]}" />
+					<field name="vefd_invoicenumber" attrs="{'readonly': [('state', '!=', 'draft')]}" />
+					<field name="vefd_mtv_tax_price" invisible="1" />
+				</xpath>
+				
+				
+				<xpath expr="//field[@name='lines']//field[@name='discount']" position="after">
+                 	<field name="vefd_rrp" />
+                 </xpath>
+				
+			</field>
+		</record>
+
+	</data>
+</odoo>

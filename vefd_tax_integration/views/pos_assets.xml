@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="assets" inherit_id="point_of_sale.assets">
+        <xpath expr="." position="inside">
+        	<script type="text/javascript" src="/vefd_tax_integration/static/src/js/OrderManagementScreen.js"/>
+        	<script type="text/javascript" src="/vefd_tax_integration/static/src/js/models.js"></script>
+            <script type="text/javascript" src="/vefd_tax_integration/static/libs/js/jquery.qrcode.min.js"/>
+        </xpath>
+    </template>
+</odoo>
